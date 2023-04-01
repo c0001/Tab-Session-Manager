@@ -1,12 +1,12 @@
 {
   "manifest_version": 2,
-  "version": "6.12.1.1",
+  "version": "6.12.1.2",
   "name": "__MSG_extName__ (entropy ver.)",
   "description": "__MSG_extDescription__",
   "default_locale": "en",
   "applications": {
     "gecko": {
-      "id": "{e2a3a69a-e1ed-479a-9220-25bf918adf0f}"
+      "id": "{d80a5891-4582-4fea-b558-981b38914a89}"
     }
   },
   "permissions": [
