@@ -1,12 +1,12 @@
 {
   "manifest_version": 2,
   "version": "6.12.1",
-  "name": "__MSG_extName__",
+  "name": "__MSG_extName__ (entropy ver.)",
   "description": "__MSG_extDescription__",
   "default_locale": "en",
   "applications": {
     "gecko": {
-      "id": "Tab-Session-Manager@sienori"
+      "id": "{e2a3a69a-e1ed-479a-9220-25bf918adf0f}"
     }
   },
   "permissions": [
