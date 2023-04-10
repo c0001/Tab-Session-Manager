@@ -145,3 +145,6 @@ Thank you to the awesome backers who supported Tab Session Manager!
 - Alvaro Díaz Ruelas
 - amagikuser
 - Cameron Wetzel
+- Glenroy walker
+- Bobbi Mason
+- Bionic Knee
