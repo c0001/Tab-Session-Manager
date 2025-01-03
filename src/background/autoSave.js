@@ -3,15 +3,14 @@ import uuidv4 from "uuid/v4";
 import log from "loglevel";
 import { openSession } from "./open.js";
 import { getSessionsByTag } from "./tag.js";
-import { loadCurrentSession, saveCurrentSession, saveSession, removeSession } from "./save.js";
+import { loadCurrentSession, saveSession, removeSession } from "./save.js";
 import { getSettings } from "src/settings/settings";
-import ignoreUrls from "./ignoreUrls";
-import { IsTracking, updateTrackingSession } from "./track.js";
+import { getTrackingInfo, updateTrackingSession } from "./track.js";
+import { init } from "./background.js";
 
 const logDir = "background/autoSave";
-let autoSaveTimer;
 
-const autoSaveRegular = async () => {
+export const autoSaveRegular = async () => {
   log.info(logDir, "autoSaveRegular()");
   try {
     const name = getSettings("useTabTitleforAutoSave")
@@ -32,22 +31,13 @@ const autoSaveRegular = async () => {
   }
 };
 
-function startAutoSave() {
-  log.log(logDir, "startAutoSave()");
-  autoSaveTimer = setInterval(autoSaveRegular, getSettings("autoSaveInterval") * 60 * 1000);
-}
-
-function stopAutoSave() {
-  clearInterval(autoSaveTimer);
-}
-
-//定期保存の設定が変更されたときにセット
-export function setAutoSave(changes, areaName) {
+//定期保存の設定が変更されたとき、起動・インストール時に自動保存のアラームをセット
+export async function setAutoSave(changes, areaName) {
   if (isChangeAutoSaveSettings(changes, areaName)) {
-    log.info(logDir, "setAutoSave()", changes, areaName);
-    stopAutoSave();
+    await browser.alarms.clear("autoSaveRegular");
     if (!getSettings("ifAutoSave")) return;
-    startAutoSave();
+    log.info(logDir, "setAutoSave");
+    browser.alarms.create("autoSaveRegular", { periodInMinutes: Number(getSettings("autoSaveInterval")) });
   }
 }
 
@@ -74,19 +64,24 @@ const updateTemp = async () => {
     if (tempSessions[0]) session.id = tempSessions[0].id;
     await saveSession(session, false);
 
-    if (IsTracking) updateTrackingSession(session);
+    const { isTracking } = await getTrackingInfo();
+    if (isTracking) updateTrackingSession(session);
   } catch (e) {
     log.error(logDir, "updateTemp()", e);
   }
 };
 
+// NOTE: updateTempTimerは、updateTempを呼びすぎないためのバッファとして利用している
+// ブラウザ起動時とタブの変更直後に呼び出されるので、setTimeoutの完了前にserviceWorkerが停止することはなく、問題なく実行される想定
 let updateTempTimer;
-export const setUpdateTempTimer = () => {
+export const setUpdateTempTimer = async () => {
+  await init();
+  const { isTracking } = await getTrackingInfo();
   if (
     !getSettings("ifAutoSaveWhenClose") &&
     !getSettings("ifAutoSaveWhenExitBrowser") &&
     !getSettings("ifOpenLastSessionWhenStartUp") &&
-    !IsTracking
+    !isTracking
   )
     return;
 
@@ -111,6 +106,7 @@ export const autoSaveWhenOpenInCurrentWindow = async () => {
 };
 
 export const autoSaveWhenWindowClose = async removedWindowId => {
+  await init();
   if (!getSettings("ifAutoSaveWhenClose")) return;
   log.info(logDir, "autoSaveWhenWindowClose()", removedWindowId);
 

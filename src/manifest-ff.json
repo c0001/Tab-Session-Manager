@@ -1,10 +1,10 @@
 {
-  "manifest_version": 2,
-  "version": "6.12.2",
+  "manifest_version": 3,
+  "version": "7.0.1",
   "name": "__MSG_extName__ (entropy ver.)",
   "description": "__MSG_extDescription__",
   "default_locale": "en",
-  "applications": {
+  "browser_specific_settings": {
     "gecko": {
       "id": "{d80a5891-4582-4fea-b558-981b38914a89}"
     }
@@ -15,7 +15,8 @@
     "tabs",
     "cookies",
     "downloads",
-    "identity"
+    "identity",
+    "alarms"
   ],
   "optional_permissions": [
     "https://www.googleapis.com/*"
@@ -31,9 +32,10 @@
   "background": {
     "scripts": [
       "background/background.js"
-    ]
+    ],
+    "type": "module"
   },
-  "browser_action": {
+  "action": {
     "default_icon": {
       "16": "icons/icon_min.svg",
       "64": "icons/icon.svg"
@@ -41,7 +43,7 @@
     "default_popup": "popup/index.html"
   },
   "commands": {
-    "_execute_browser_action": {
+    "_execute_action": {
       "description": "__MSG_openPopupDescription__"
     },
     "saveAllWindow": {

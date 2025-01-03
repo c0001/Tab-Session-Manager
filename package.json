@@ -2,7 +2,6 @@
   "name": "tab-session-manager",
   "version": "0.0.0",
   "dependencies": {
-    "axios": "^0.21.2",
     "browser-image-compression": "^1.0.14",
     "browser-info": "^1.2.0",
     "clone": "^2.1.2",
@@ -32,7 +31,7 @@
     "@babel/preset-react": "^7.9.4",
     "@svgr/webpack": "^8.1.0",
     "babel-loader": "^8.1.0",
-    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-class-properties": "^6.10.2",
     "buffer": "^6.0.3",
     "clean-webpack-plugin": "^0.1.19",
     "copy-webpack-plugin": "^9.0.1",
@@ -40,7 +39,7 @@
     "html-webpack-plugin": "^5.5.3",
     "mini-css-extract-plugin": "^1.6.0",
     "node-sass": "^9.0.0",
-    "sass-loader": "^12.1.0",
+    "sass-loader": "^14.2.1",
     "webpack": "^5.88.2",
     "webpack-cli": "^4.8.0",
     "zip-webpack-plugin": "^4.0.1"
@@ -65,8 +64,5 @@
     "webextensions",
     "firefox",
     "chrome"
-  ],
-  "volta": {
-    "node": "18.17.1"
-  }
+  ]
 }

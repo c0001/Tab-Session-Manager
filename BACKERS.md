@@ -156,3 +156,19 @@ Thank you to the awesome backers who supported Tab Session Manager!
 - Eyüp deniz Taşdelen
 - Mladen Fernežir
 - Archer36
+- Tony Pujals
+- Rick Duggan
+- Dave Badia
+- Thumbsy
+- VerdantSkies
+- Eddie Kero
+- Nils Ackermann
+- Indiaminah Lawrence
+- Gaspar Ghostie
+- Mitchell Marks
+- Noah Andrews
+- Oli
+- Willis Hernandez
+- Jack
+- Yvonne Wilson
+- Mal Den

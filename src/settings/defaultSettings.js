@@ -8,9 +8,6 @@ const handleApplyDeviceNameButtonClick = () => {
   if (res) browser.runtime.sendMessage({ message: "applyDeviceName" });
 };
 
-const getTheme = () =>
-  window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
-
 export default [
   {
     category: "open",
@@ -145,7 +142,7 @@ export default [
             title: "autoSaveIntervalLabel",
             captions: ["autoSaveIntervalCaptionLabel"],
             type: "number",
-            min: 0.1,
+            min: 0.5,
             step: 0.1,
             placeholder: 15,
             default: 15
@@ -383,7 +380,7 @@ export default [
         title: "themeLabel",
         captions: ["themeCaptionLabel"],
         type: "select",
-        default: getTheme(),
+        default: "light",
         options: [
           {
             name: "lightLabel",
