@@ -64,8 +64,5 @@
     "webextensions",
     "firefox",
     "chrome"
-  ],
-  "volta": {
-    "node": "18.17.1"
-  }
+  ]
 }
