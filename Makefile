@@ -29,5 +29,5 @@ gen-credential:
 
 .PHONY: build
 build: check-node-ver clean gen-credential
-	npm install
+	npm ci
 	npm run build
