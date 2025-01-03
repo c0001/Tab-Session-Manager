@@ -1,7 +1,11 @@
 import browser from "webextension-polyfill";
 import log from "loglevel";
-import { initSettings, getSettings, setSettings } from "src/settings/settings";
+import { getSettings, setSettings } from "src/settings/settings";
 import { initShortcuts } from "./keyboardShortcuts";
+import { init } from "./background";
+import updateOldSessions from "./updateOldSessions";
+import { setSessionStartTime } from "./save";
+import { setAutoSave } from "./autoSave";
 
 const logDir = "background/onInstalledListener";
 
@@ -14,8 +18,9 @@ const openOptionsPage = active => {
 
 export default async details => {
   if (details.reason != "install" && details.reason != "update") return;
+  await init();
+  await setSessionStartTime();
   log.info(logDir, "onInstalledListener()", details);
-  await initSettings();
   initShortcuts();
   const isShowOptionsPage = getSettings("isShowOptionsPageWhenUpdated");
 
@@ -23,4 +28,6 @@ export default async details => {
     openOptionsPage(false);
   }
   setSettings("isShowUpdated", true);
+  await updateOldSessions();
+  setAutoSave();
 };

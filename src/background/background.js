@@ -1,6 +1,5 @@
 import browser from "webextension-polyfill";
 import log from "loglevel";
-import updateOldSessions from "./updateOldSessions";
 import {
   setAutoSave,
   handleTabUpdated,
@@ -9,7 +8,8 @@ import {
   autoSaveWhenExitBrowser,
   setUpdateTempTimer,
   openLastSession,
-  autoSaveWhenOpenInCurrentWindow
+  autoSaveWhenOpenInCurrentWindow,
+  autoSaveRegular
 } from "./autoSave";
 import Sessions from "./sessions";
 import { replacePage } from "./replace";
@@ -22,7 +22,8 @@ import {
   removeSession,
   deleteAllSessions,
   updateSession,
-  renameSession
+  renameSession,
+  setSessionStartTime
 } from "./save";
 import getSessions from "./getSessions";
 import { openSession } from "./open";
@@ -42,59 +43,33 @@ import { compressAllSessions } from "./compressAllSessions";
 import { startTracking, endTrackingByWindowDelete, updateTrackingStatus } from "./track";
 
 const logDir = "background/background";
-export const SessionStartTime = Date.now();
-
-const addListeners = () => {
-  const handleReplace = () => replacePage();
-  browser.tabs.onActivated.addListener(handleReplace);
-  browser.windows.onFocusChanged.addListener(handleReplace);
-
-  browser.storage.onChanged.addListener((changes, areaName) => {
-    handleSettingsChange(changes, areaName);
-    setAutoSave(changes, areaName);
-    updateLogLevel();
-    resetLastBackupTime(changes);
-  });
-
-  browser.tabs.onUpdated.addListener(handleTabUpdated);
-  browser.tabs.onRemoved.addListener(handleTabRemoved);
-  browser.tabs.onCreated.addListener(setUpdateTempTimer);
-  browser.tabs.onMoved.addListener(setUpdateTempTimer);
-  browser.windows.onCreated.addListener(setUpdateTempTimer);
-  browser.windows.onRemoved.addListener(autoSaveWhenWindowClose);
-  browser.downloads.onChanged.addListener(handleDownloadsChanged);
-};
 
 let IsInit = false;
-const init = async () => {
+export const init = async () => {
+  if (IsInit) return;
   await initSettings();
   overWriteLogLevel();
   updateLogLevel();
   log.info(logDir, "init()");
   await Sessions.init();
   IsInit = true;
-  await updateOldSessions();
-
-  setAutoSave();
-  setTimeout(backupSessions, 30000);
-  addListeners();
-  syncCloudAuto();
-
-  if (IsStartup) {
-    await autoSaveWhenExitBrowser();
-    const startupBehavior = getSettings("startupBehavior");
-    if (startupBehavior === "previousSession") openLastSession();
-    else if (startupBehavior === "startupSession") openStartupSessions();
-  }
 };
 
-let IsStartup = false;
 const onStartupListener = async () => {
+  await init();
   log.info(logDir, "onStartupListener()");
-  IsStartup = true;
+  await setSessionStartTime();
+  await autoSaveWhenExitBrowser();
+  const startupBehavior = getSettings("startupBehavior");
+  if (startupBehavior === "previousSession") openLastSession();
+  else if (startupBehavior === "startupSession") openStartupSessions();
+  setAutoSave();
+  syncCloudAuto();
+  browser.alarms.create("backupSessions", { delayInMinutes: 0.5 });
 };
 
 const onMessageListener = async (request, sender, sendResponse) => {
+  await init();
   log.info(logDir, "onMessageListener()", request);
   switch (request.message) {
     case "save": {
@@ -199,9 +174,43 @@ const onMessageListener = async (request, sender, sendResponse) => {
   }
 };
 
+const handleReplace = async () => {
+  await init();
+  replacePage();
+}
+
+const onChangeStorageListener = async (changes, areaName) => {
+  await init();
+  handleSettingsChange(changes, areaName);
+  setAutoSave(changes, areaName);
+  updateLogLevel();
+  resetLastBackupTime(changes);
+}
+
+const onAlarmListener = async (alarmInfo) => {
+  await init();
+  log.info(logDir, "onAlarmListener()", alarmInfo);
+  switch (alarmInfo.name) {
+    case "autoSaveRegular":
+      return autoSaveRegular();
+    case "backupSessions":
+      return backupSessions();
+  }
+}
+
 browser.runtime.onStartup.addListener(onStartupListener);
 browser.runtime.onInstalled.addListener(onInstalledListener);
 browser.runtime.onUpdateAvailable.addListener(onUpdateAvailableListener);
 browser.runtime.onMessage.addListener(onMessageListener);
 browser.commands.onCommand.addListener(onCommandListener);
-init();
+browser.tabs.onActivated.addListener(handleReplace);
+browser.windows.onFocusChanged.addListener(handleReplace);
+browser.tabs.onUpdated.addListener(handleTabUpdated);
+browser.tabs.onRemoved.addListener(handleTabRemoved);
+browser.tabs.onCreated.addListener(setUpdateTempTimer);
+browser.tabs.onMoved.addListener(setUpdateTempTimer);
+browser.windows.onCreated.addListener(setUpdateTempTimer);
+browser.windows.onRemoved.addListener(autoSaveWhenWindowClose);
+browser.downloads.onChanged.addListener(handleDownloadsChanged);
+browser.storage.local.onChanged.addListener(onChangeStorageListener);
+browser.alarms.onAlarm.addListener(onAlarmListener);
